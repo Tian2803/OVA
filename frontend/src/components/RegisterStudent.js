@@ -61,7 +61,7 @@ const RegisterStudent = () => {
     <Container className="d-flex justify-content-center align-items-center vh-100">
       <Row>
         <Col md={12}>
-          <h3 className="text-center">Sign up student</h3>
+          <h3 className="text-center">Registro estudiantes</h3>
           {submitted ? (
             <Alert variant="success">
               Registro exitoso! Redirigiendo al inicio de sesión...

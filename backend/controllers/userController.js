@@ -137,6 +137,7 @@ exports.deleteUser = async (req, res) => {
       });
   }
 };
+
 // Obtener los cursos en los que el usuario está inscrito
 exports.getUserCourses = async (req, res) => {
   try {

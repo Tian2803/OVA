@@ -1,3 +1,4 @@
+// /frontend/src/components/EditCourse.js
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Container, Form, Button, Alert } from "react-bootstrap";
@@ -6,23 +7,25 @@ import { getCourseById, updateCourse } from "../services/courseService";
 const EditCourse = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [course, setCourse] = useState({});
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
+  const [course, setCourse] = useState({
+    name: "",
+    description: "",
+    contentBasic: "", // Contenido HTML para nivel básico
+    contentIntermediate: "", // Contenido HTML para nivel intermedio
+    contentAdvanced: "", // Contenido HTML para nivel avanzado
+  });
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
 
   useEffect(() => {
     const fetchCourse = async () => {
       try {
-        const user = JSON.parse(localStorage.getItem("user"));
-        const courseData = await getCourseById(id, user.token);
+        const storedUser = JSON.parse(localStorage.getItem("user"));
+        const courseData = await getCourseById(id, storedUser.token);
         setCourse(courseData);
-        setName(courseData.name);
-        setDescription(courseData.description);
       } catch (err) {
         setError(
-          "Error al obtener el curso. Por favor, inténtalo de nuevo más tarde."
+          "Error al cargar la información del curso. Por favor, inténtalo de nuevo más tarde."
         );
       }
     };
@@ -30,13 +33,18 @@ const EditCourse = () => {
     fetchCourse();
   }, [id]);
 
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setCourse({ ...course, [name]: value });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const user = JSON.parse(localStorage.getItem("user"));
-      await updateCourse(id, { name, description }, user.token);
+      const storedUser = JSON.parse(localStorage.getItem("user"));
+      await updateCourse(id, course, storedUser.token);
       setSuccess("Curso actualizado exitosamente");
-      navigate("/professor/courses");
+      setTimeout(() => navigate(`/professor/course/${id}`), 2000);
     } catch (err) {
       setError(
         "Error al actualizar el curso. Por favor, inténtalo de nuevo más tarde."
@@ -50,25 +58,54 @@ const EditCourse = () => {
       {error && <Alert variant="danger">{error}</Alert>}
       {success && <Alert variant="success">{success}</Alert>}
       <Form onSubmit={handleSubmit}>
-        <Form.Group controlId="formCourseName" className="mb-3">
+        <Form.Group controlId="formName" className="mb-3">
           <Form.Label>Nombre del Curso</Form.Label>
           <Form.Control
             type="text"
-            placeholder="Ingrese el nombre del curso"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
+            name="name"
+            value={course.name}
+            onChange={handleChange}
             required
           />
         </Form.Group>
-        <Form.Group controlId="formCourseDescription" className="mb-3">
+        <Form.Group controlId="formDescription" className="mb-3">
           <Form.Label>Descripción</Form.Label>
           <Form.Control
-            as="textarea"
-            rows={3}
-            placeholder="Ingrese la descripción del curso"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            type="text"
+            name="description"
+            value={course.description}
+            onChange={handleChange}
             required
+          />
+        </Form.Group>
+        <Form.Group controlId="formContentBasic" className="mb-3">
+          <Form.Label>Contenido HTML - Nivel Básico</Form.Label>
+          <Form.Control
+            as="textarea"
+            rows={10}
+            name="contentBasic"
+            value={course.contentBasic}
+            onChange={handleChange}
+          />
+        </Form.Group>
+        <Form.Group controlId="formContentIntermediate" className="mb-3">
+          <Form.Label>Contenido HTML - Nivel Intermedio</Form.Label>
+          <Form.Control
+            as="textarea"
+            rows={10}
+            name="contentIntermediate"
+            value={course.contentIntermediate}
+            onChange={handleChange}
+          />
+        </Form.Group>
+        <Form.Group controlId="formContentAdvanced" className="mb-3">
+          <Form.Label>Contenido HTML - Nivel Avanzado</Form.Label>
+          <Form.Control
+            as="textarea"
+            rows={10}
+            name="contentAdvanced"
+            value={course.contentAdvanced}
+            onChange={handleChange}
           />
         </Form.Group>
         <Button variant="primary" type="submit">

@@ -1,7 +1,6 @@
 // /backend/controllers/courseController.js
 const Course = require("../models/Course");
 const User = require("../models/User");
-const Module = require("../models/Module");
 
 // Middleware para verificar la propiedad del curso
 const verifyOwnership = async (req, res, next) => {
@@ -29,29 +28,6 @@ const verifyOwnership = async (req, res, next) => {
   }
 };
 
-// Agregar un módulo a un curso
-exports.addModule = [
-  verifyOwnership,
-  async (req, res) => {
-    try {
-      const { title, level, subSections } = req.body;
-      const newModule = { title, level, subSections };
-
-      req.course.modules.push(newModule);
-      await req.course.save();
-
-      res.status(201).send(newModule);
-    } catch (error) {
-      res
-        .status(400)
-        .send({
-          mensaje: "Error al agregar el módulo",
-          detalles: error.message,
-        });
-    }
-  },
-];
-
 // Función para generar un código alfanumérico de 6 caracteres
 const generateCourseCode = () => {
   const characters =
@@ -66,7 +42,13 @@ const generateCourseCode = () => {
 // Crear un nuevo curso
 exports.createCourse = async (req, res) => {
   try {
-    const { name, description } = req.body;
+    const {
+      name,
+      description,
+      contentBasic,
+      contentIntermediate,
+      contentAdvanced,
+    } = req.body;
     const professorId = req.user._id;
     const professor = await User.findById(professorId);
 
@@ -79,6 +61,9 @@ exports.createCourse = async (req, res) => {
       description,
       professor: professorId,
       code: generateCourseCode(), // Generar código de curso
+      contentBasic,
+      contentIntermediate,
+      contentAdvanced,
     });
 
     await course.save();
@@ -130,11 +115,24 @@ exports.getCourseById = async (req, res) => {
 // Actualizar un curso por ID
 exports.updateCourse = async (req, res) => {
   try {
-    const { name, description } = req.body;
+    const {
+      name,
+      description,
+      contentBasic,
+      contentIntermediate,
+      contentAdvanced,
+    } = req.body;
     const professorId = req.user._id;
     const course = await Course.findByIdAndUpdate(
       req.params.id,
-      { name, description, professor: professorId },
+      {
+        name,
+        description,
+        professor: professorId,
+        contentBasic,
+        contentIntermediate,
+        contentAdvanced,
+      },
       { new: true, runValidators: true }
     );
 

@@ -36,3 +36,48 @@
     transform: rotate(360deg);
   }
 }
+
+/* styles.css o similar */
+.course-content {
+  padding: 20px;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  margin-bottom: 20px;
+}
+
+.course-content h1,
+.course-content h2,
+.course-content h3,
+.course-content h4,
+.course-content h5,
+.course-content h6 {
+  margin-top: 20px;
+}
+
+.course-content p {
+  margin-bottom: 15px;
+}
+
+.course-content ul,
+.course-content ol {
+  padding-left: 20px;
+  margin-bottom: 15px;
+}
+
+.course-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 15px;
+}
+
+.course-content table,
+.course-content th,
+.course-content td {
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+
+.course-content th {
+  background-color: #f4f4f4;
+}

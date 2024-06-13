@@ -1,7 +1,7 @@
 // /frontend/src/components/CourseDetails.js
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { Container, Card, Alert } from "react-bootstrap";
+import { Container, Tab, Tabs, Alert } from "react-bootstrap";
 import { getCourseById } from "../services/courseService";
 
 const CourseDetails = () => {
@@ -17,7 +17,7 @@ const CourseDetails = () => {
         setCourse(courseData);
       } catch (err) {
         setError(
-          "Error al obtener los detalles del curso. Por favor, inténtalo de nuevo más tarde."
+          "Error al obtener el curso. Por favor, inténtalo de nuevo más tarde."
         );
       }
     };
@@ -25,37 +25,47 @@ const CourseDetails = () => {
     fetchCourse();
   }, [id]);
 
+  if (error) {
+    return (
+      <Container className="mt-5">
+        <Alert variant="danger">{error}</Alert>
+      </Container>
+    );
+  }
+
+  if (!course) {
+    return (
+      <Container className="mt-5">
+        <Alert variant="info">Cargando curso...</Alert>
+      </Container>
+    );
+  }
+
   return (
-    <Container>
-      <h2>Detalles del Curso</h2>
-      {error && <Alert variant="danger">{error}</Alert>}
-      {course && (
-        <Card className="mb-4">
-          <Card.Body>
-            <Card.Title>{course.name}</Card.Title>
-            <Card.Text>Descripción: {course.description}</Card.Text>
-            <Card.Text>Código: {course.cod}</Card.Text>
-            {course.modules.map((module, moduleIndex) => (
-              <div key={moduleIndex}>
-                <h4>
-                  {module.title} ({module.level})
-                </h4>
-                {module.subSections.map((subSection, subSectionIndex) => (
-                  <div key={subSectionIndex} className="mb-3">
-                    <h5>{subSection.title}</h5>
-                    {subSection.points.map((point, pointIndex) => (
-                      <div key={pointIndex} className="mb-2">
-                        <h6>{point.title}</h6>
-                        <p>{point.content}</p>
-                      </div>
-                    ))}
-                  </div>
-                ))}
-              </div>
-            ))}
-          </Card.Body>
-        </Card>
-      )}
+    <Container className="mt-5">
+      <h2>{course.name}</h2>
+      <p>{course.description}</p>
+      <h4>Profesor: {course.professor.name}</h4>
+      <Tabs defaultActiveKey="basic" id="course-tabs" className="mb-3">
+        <Tab eventKey="basic" title="Básico">
+          <div
+            className="course-content"
+            dangerouslySetInnerHTML={{ __html: course.contentBasic }}
+          />
+        </Tab>
+        <Tab eventKey="intermediate" title="Intermedio">
+          <div
+            className="course-content"
+            dangerouslySetInnerHTML={{ __html: course.contentIntermediate }}
+          />
+        </Tab>
+        <Tab eventKey="advanced" title="Avanzado">
+          <div
+            className="course-content"
+            dangerouslySetInnerHTML={{ __html: course.contentAdvanced }}
+          />
+        </Tab>
+      </Tabs>
     </Container>
   );
 };

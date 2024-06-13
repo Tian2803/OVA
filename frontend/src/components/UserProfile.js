@@ -1,109 +1,112 @@
 // /frontend/src/components/UserProfile.js
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import { Container, Form, Button, Alert } from "react-bootstrap";
+import userService from "../services/userService";
 
 const UserProfile = () => {
-  const [user, setUser] = useState({
-    name: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-  });
-  const [message, setMessage] = useState("");
-  const [error, setError] = useState("");
+  const [user, setUser] = useState(null);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
 
   useEffect(() => {
-    const fetchUserData = async () => {
-      const storedUser = JSON.parse(localStorage.getItem("user"));
-      const response = await axios.get(
-        `http://localhost:5000/api/users/${storedUser.user._id}`
-      );
-      setUser({
-        ...response.data,
-        password: "",
-        confirmPassword: "",
-      });
+    const fetchUser = async () => {
+      try {
+        const storedUser = JSON.parse(localStorage.getItem("user"));
+        const userData = await userService.getUserById(
+          storedUser.user._id,
+          storedUser.token
+        );
+        setUser(userData);
+        setName(userData.name);
+        setEmail(userData.email);
+      } catch (err) {
+        setError(
+          "Error al cargar la información del usuario. Por favor, inténtalo de nuevo más tarde."
+        );
+      }
     };
 
-    fetchUserData();
+    fetchUser();
   }, []);
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setUser({ ...user, [name]: value });
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (user.password !== user.confirmPassword) {
+    setError(null);
+    setSuccess(null);
+
+    if (password !== confirmPassword) {
       setError("Las contraseñas no coinciden");
       return;
     }
+
     try {
-      const updatedUser = { ...user };
-      delete updatedUser.confirmPassword;
-      await axios.put(
-        `http://localhost:5000/api/users/${user._id}`,
-        updatedUser
+      const storedUser = JSON.parse(localStorage.getItem("user"));
+      await userService.updateUser(
+        storedUser.user._id,
+        { name, email, password },
+        storedUser.token
       );
-      setMessage("Información actualizada correctamente");
+      setSuccess("Información del usuario actualizada exitosamente");
+      setPassword("");
+      setConfirmPassword("");
     } catch (err) {
-      setError("Error al actualizar la información");
+      setError(
+        "Error al actualizar la información del usuario. Por favor, inténtalo de nuevo más tarde."
+      );
     }
   };
 
   return (
-    <Container fluid className="d-flex">
-      <Container className="p-4">
-        <h2>Actualizar Información del Usuario</h2>
-        {message && <Alert variant="success">{message}</Alert>}
-        {error && <Alert variant="danger">{error}</Alert>}
+    <Container>
+      <h2>Perfil de Usuario</h2>
+      {error && <Alert variant="danger">{error}</Alert>}
+      {success && <Alert variant="success">{success}</Alert>}
+      {user && (
         <Form onSubmit={handleSubmit}>
-          <Form.Group className="mb-3">
+          <Form.Group controlId="formName" className="mb-3">
             <Form.Label>Nombre</Form.Label>
             <Form.Control
               type="text"
-              name="name"
-              value={user.name || ""}
-              onChange={handleChange}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
               required
             />
           </Form.Group>
-          <Form.Group className="mb-3">
+          <Form.Group controlId="formEmail" className="mb-3">
             <Form.Label>Email</Form.Label>
             <Form.Control
               type="email"
-              name="email"
-              value={user.email || ""}
-              onChange={handleChange}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               required
-              readOnly
+              disabled
             />
           </Form.Group>
-          <Form.Group className="mb-3">
-            <Form.Label>Contraseña</Form.Label>
+          <Form.Group controlId="formPassword" className="mb-3">
+            <Form.Label>Nueva Contraseña</Form.Label>
             <Form.Control
               type="password"
-              name="password"
-              value={user.password || ""}
-              onChange={handleChange}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
             />
           </Form.Group>
-          <Form.Group className="mb-3">
-            <Form.Label>Confirmar Contraseña</Form.Label>
+          <Form.Group controlId="formConfirmPassword" className="mb-3">
+            <Form.Label>Confirmar Nueva Contraseña</Form.Label>
             <Form.Control
               type="password"
-              name="confirmPassword"
-              value={user.confirmPassword || ""}
-              onChange={handleChange}
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
             />
           </Form.Group>
           <Button variant="primary" type="submit">
-            Actualizar
+            Actualizar Perfil
           </Button>
         </Form>
-      </Container>
+      )}
     </Container>
   );
 };

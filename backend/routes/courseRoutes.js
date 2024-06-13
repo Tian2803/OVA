@@ -5,7 +5,6 @@ const courseController = require("../controllers/courseController");
 const { protect } = require("../middleware/authMiddleware");
 
 router.post("/join", protect, courseController.joinCourse);
-router.post("/:id/modules", protect, courseController.addModule);
 // Rutas para CRUD de cursos
 router.post("/", protect, courseController.createCourse);
 router.get("/", protect, courseController.getCourses);

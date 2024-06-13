@@ -1,100 +1,152 @@
 // /frontend/src/components/RegisterProfessor.js
 import React, { useState } from "react";
-import { Container, Form, Button, Alert } from "react-bootstrap";
+import { Container, Form, Button, Row, Col, Alert } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import userService from "../services/userService";
 
 const RegisterProfessor = () => {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [message, setMessage] = useState(null);
-  const [error, setError] = useState(null);
+  const [user, setUser] = useState({
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
+  const [errors, setErrors] = useState({});
+  const [submitted, setSubmitted] = useState(false);
+
   const navigate = useNavigate();
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setUser({ ...user, [name]: value });
+  };
+
+  const validateEmail = (email) => {
+    return email.endsWith("@unicartagena.edu.co");
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setMessage(null);
-    setError(null);
+    setErrors({});
 
-    if (password !== confirmPassword) {
-      setError("Las contraseñas no coinciden");
+    if (!validateEmail(user.email)) {
+      setErrors({
+        email: "El correo debe pertenecer al dominio @unicartagena.edu.co",
+      });
+      return;
+    }
+
+    if (user.password !== user.confirmPassword) {
+      setErrors({ confirmPassword: "Las contraseñas no coinciden" });
       return;
     }
 
     const newUser = {
-      name,
-      email,
-      password,
+      name: user.name,
+      email: user.email,
+      password: user.password,
       role: "profesor",
     };
 
     try {
       await userService.createUser(newUser);
-      setMessage("Registro exitoso. Espere aprobación.");
-      setTimeout(() => {
-        navigate("/login");
-      }, 3000);
+      setSubmitted(true);
+      setTimeout(() => navigate("/login"), 2000);
     } catch (error) {
-      setError("Error al registrar el profesor. Inténtelo de nuevo.");
+      setErrors({
+        submit: "Error al registrar el profesor. Inténtelo de nuevo.",
+      });
     }
   };
 
   return (
-    <Container className="mt-5">
-      <h2>Registrar Profesor</h2>
-      {message && <Alert variant="success">{message}</Alert>}
-      {error && <Alert variant="danger">{error}</Alert>}
-      <Form onSubmit={handleSubmit}>
-        <Form.Group controlId="name">
-          <Form.Label>Nombre</Form.Label>
-          <Form.Control
-            type="text"
-            placeholder="Ingrese su nombre"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-          />
-        </Form.Group>
+    <Container className="d-flex justify-content-center align-items-center vh-100">
+      <Row>
+        <Col md={12}>
+          <h3 className="text-center">Registro de Profesores</h3>
+          {submitted ? (
+            <Alert variant="success">
+              Registro exitoso! Redirigiendo al inicio de sesión...
+            </Alert>
+          ) : (
+            <Form onSubmit={handleSubmit} className="border p-4 rounded">
+              <Form.Group className="mb-3" controlId="formBasicName">
+                <Form.Label>Nombre</Form.Label>
+                <Form.Control
+                  type="text"
+                  placeholder="Ingrese su nombre completo"
+                  name="name"
+                  value={user.name}
+                  onChange={handleChange}
+                  required
+                />
+              </Form.Group>
 
-        <Form.Group controlId="email">
-          <Form.Label>Correo Electrónico</Form.Label>
-          <Form.Control
-            type="email"
-            placeholder="Ingrese su correo"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-        </Form.Group>
+              <Form.Group className="mb-3" controlId="formBasicEmail">
+                <Form.Label>Email</Form.Label>
+                <Form.Control
+                  type="email"
+                  placeholder="Correo electronico"
+                  name="email"
+                  value={user.email}
+                  onChange={handleChange}
+                  required
+                  isInvalid={!!errors.email}
+                />
+                <Form.Control.Feedback type="invalid">
+                  {errors.email}
+                </Form.Control.Feedback>
+              </Form.Group>
 
-        <Form.Group controlId="password">
-          <Form.Label>Contraseña</Form.Label>
-          <Form.Control
-            type="password"
-            placeholder="Ingrese su contraseña"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-        </Form.Group>
+              <Form.Group className="mb-3" controlId="formBasicPassword">
+                <Form.Label>Contraseña</Form.Label>
+                <Form.Control
+                  type="password"
+                  placeholder="Contraseña"
+                  name="password"
+                  value={user.password}
+                  onChange={handleChange}
+                  required
+                />
+              </Form.Group>
 
-        <Form.Group controlId="confirmPassword">
-          <Form.Label>Confirmar Contraseña</Form.Label>
-          <Form.Control
-            type="password"
-            placeholder="Confirme su contraseña"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            required
-          />
-        </Form.Group>
+              <Form.Group className="mb-3" controlId="formBasicConfirmPassword">
+                <Form.Label>Confirmar Contraseña</Form.Label>
+                <Form.Control
+                  type="password"
+                  placeholder="Confirmar Contraseña"
+                  name="confirmPassword"
+                  value={user.confirmPassword}
+                  onChange={handleChange}
+                  required
+                  isInvalid={!!errors.confirmPassword}
+                />
+                <Form.Control.Feedback type="invalid">
+                  {errors.confirmPassword}
+                </Form.Control.Feedback>
+              </Form.Group>
 
-        <Button variant="primary" type="submit" className="mt-3">
-          Registrar
-        </Button>
-      </Form>
+              <Form.Group className="mb-3" controlId="formBasicCheckbox">
+                <Form.Check
+                  type="checkbox"
+                  label="Acepto los Términos de uso y la Política de privacidad"
+                  required
+                />
+              </Form.Group>
+
+              <Button variant="primary" type="submit" className="w-100">
+                Registrarse
+              </Button>
+
+              {errors.submit && (
+                <Alert variant="danger" className="mt-3">
+                  {errors.submit}
+                </Alert>
+              )}
+            </Form>
+          )}
+        </Col>
+      </Row>
     </Container>
   );
 };
